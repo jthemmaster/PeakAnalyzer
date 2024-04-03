@@ -40,6 +40,9 @@ def lorentzian_with_offset(x, x0, a, gamma, y0):
     return y0 + (2 * a * np.pi) * (gamma**2 / ((x - x0)**2 + gamma**2))
 
 # Loop through each file in the dataset
+number_of_files = len(dataset)
+file_number = 0
+print(f"Found {number_of_files} files in the dataset")
 for file, data in dataset.items():
     # Filter the DataFrame for the desired wavelength range
     filtered_data = data[(data['wavelength'] > 500) & (data['wavelength'] < 950)]
@@ -74,12 +77,9 @@ for file, data in dataset.items():
     ss_res = np.sum(residuals**2)
     ss_tot = np.sum((y_data-np.mean(y_data))**2)
     r_squared = 1 - (ss_res / ss_tot)
-    print(f"r^2 error: {r_squared}")
-    #print peakposition, peak intensity, peak width (FWHM) and Absorbanz bei 400 nm
-    print(f"Peak position: {popt[0]}")
-    print(f"Peak width (FWHM): {popt[2]}")
+    file_number += 1
+    print(f"Analyzing file {file_number} of {number_of_files}")
     peak_intensity = lorentzian_with_offset(popt[0], *popt)
-    print(f"Peak intensity: {peak_intensity}")
     # Plot the data
     plt.figure(figsize=(10, 6))
     plt.plot(data['wavelength'][(data['wavelength'] > 500) & (data['wavelength'] < 900)], data['intensity'][(data['wavelength'] > 500) & (data['wavelength'] < 900)], 'b.', label='data')  # Original data
@@ -94,6 +94,7 @@ for file, data in dataset.items():
     plt.title(f'Lorentzian Fit with Offset for {file}')
     plt.legend()
     plt.savefig(f"{figure_path}/{file}_fit.png", dpi=600)
+    plt.close() 
     if not os.path.exists(f"{files_path}/results.csv"):
         with open(f"{files_path}/results.csv", "w") as f:
             f.write("Filename    Peakposition    Peakintensity    FWHM    Absorbanz_400nm\n")

@@ -81,6 +81,30 @@ def average_value(range, data, column):
     return data.loc[range, column].mean()
 
 
+def create_video(folder_path, output_path, fps=30):
+    images = sorted(glob.glob(os.path.join(folder_path, "*.png")), key=os.path.getmtime)
+    if not images:
+        print("No images found. Check the folder path and file extensions.")
+        return
+    frame = cv2.imread(images[0])
+    if frame is None:
+        print(
+            "Failed to read the first image. Ensure the file is accessible and not corrupted."
+        )
+        return
+    height, width, layers = frame.shape
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    video = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    for image in images:
+        video_frame = cv2.imread(image)
+        if video_frame is not None:
+            video.write(video_frame)
+        else:
+            print(f"Warning: Failed to read image {image}")
+    video.release()
+    print(f"Video created successfully and saved to {output_path}")
+
+
 def fit_lorentzian(
     dataset,
     figure_path,
@@ -173,30 +197,6 @@ def fit_lorentzian(
     if create_video:
         create_video(figure_path, "output_video.mp4", fps=10)
     print("All files processed")
-
-
-def create_video(folder_path, output_path, fps=30):
-    images = sorted(glob.glob(os.path.join(folder_path, "*.png")), key=os.path.getmtime)
-    if not images:
-        print("No images found. Check the folder path and file extensions.")
-        return
-    frame = cv2.imread(images[0])
-    if frame is None:
-        print(
-            "Failed to read the first image. Ensure the file is accessible and not corrupted."
-        )
-        return
-    height, width, layers = frame.shape
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    video = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-    for image in images:
-        video_frame = cv2.imread(image)
-        if video_frame is not None:
-            video.write(video_frame)
-        else:
-            print(f"Warning: Failed to read image {image}")
-    video.release()
-    print(f"Video created successfully and saved to {output_path}")
 
 
 dataset, figure_path, files_path = process_files()
